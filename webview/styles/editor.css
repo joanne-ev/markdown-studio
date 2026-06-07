@@ -272,6 +272,7 @@ html, body, #root {
   border-collapse: collapse;
   width: 100%;
   margin: 1em 0;
+  table-layout: fixed;
 }
 
 .tiptap-editor th, .tiptap-editor td {

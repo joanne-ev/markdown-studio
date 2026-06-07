@@ -310,6 +310,7 @@ function fixTableHeaders(md: string): string {
  * Pad all table cells to uniform column widths with aligned separators.
  * This normalizes tables to expanded format so remark-stringify's own
  * padding doesn't cause cosmetic diffs on the first round-trip.
+ * All columns get equal width (max across all columns) for fixed table layout.
  */
 function padTables(md: string): string {
   const lines = md.split("\n");
@@ -324,15 +325,20 @@ function padTables(md: string): string {
         i++;
       }
 
-      // Compute column widths across all data rows
-      const colWidths: number[] = [];
+      // Compute global max width across ALL columns (equal column widths)
+      let globalMaxWidth = 3;
       for (const tl of tableLines) {
         if (isSeparatorRow(tl)) continue;
         const cells = splitTableRow(tl);
-        cells.forEach((c, idx) => {
-          colWidths[idx] = Math.max(colWidths[idx] || 3, c.trim().length);
+        cells.forEach((c) => {
+          globalMaxWidth = Math.max(globalMaxWidth, c.trim().length);
         });
       }
+
+      const colCount = tableLines.find((tl) => !isSeparatorRow(tl))
+        ? splitTableRow(tableLines.find((tl) => !isSeparatorRow(tl))!).length
+        : 0;
+      const colWidths = Array(colCount).fill(globalMaxWidth);
 
       for (const tl of tableLines) {
         if (isSeparatorRow(tl)) {
