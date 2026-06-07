@@ -145,6 +145,16 @@ export function TableOfContents() {
     document.body.style.userSelect = "none";
   };
 
+  const onHandleClick = () => {
+    if (dragging.current) return;
+    setCollapsed(!collapsed);
+    if (!collapsed) {
+      lastOpenWidth.current = width;
+    } else {
+      setWidth(Math.max(lastOpenWidth.current, DEFAULT_WIDTH));
+    }
+  };
+
   if (entries.length === 0) return null;
 
   return (
@@ -152,7 +162,8 @@ export function TableOfContents() {
       <div
         className={`toc-handle ${collapsed ? "toc-handle-collapsed" : ""}`}
         onMouseDown={onHandleMouseDown}
-        title={collapsed ? "Drag or click to show contents" : "Drag to resize"}
+        onClick={onHandleClick}
+        title={collapsed ? "Click to show contents" : "Click to hide contents"}
       >
         {collapsed ? (
           <ChevronLeft
