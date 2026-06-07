@@ -113,14 +113,17 @@ export const ImageBlock = Image.extend({
           const link = element.closest("a");
           return link?.getAttribute("href") || null;
         },
-        renderHTML: (attributes) => {
-          if (attributes.href) {
-            return { href: attributes.href };
-          }
-          return {};
-        },
       },
     };
+  },
+
+  renderHTML({ node, HTMLAttributes }) {
+    const { href, src, alt, title, ...attrs } = HTMLAttributes;
+    const imgAttrs = { src, alt, title, ...attrs };
+    if (href) {
+      return ["a", { href, target: "_blank", rel: "noopener noreferrer" }, ["img", imgAttrs]];
+    }
+    return ["img", imgAttrs];
   },
 
   addNodeView() {
