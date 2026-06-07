@@ -137,14 +137,21 @@ export async function markdownToHtml(
     });
 
     // Ensure each <img> is in its own <p> block (not inline with other images)
+    // Preserve wrapping <a> links when splitting linked images
     doc.querySelectorAll("p").forEach((p) => {
       const imgs = p.querySelectorAll("img");
       if (imgs.length <= 1) return;
       const parent = p.parentNode;
       if (!parent) return;
-      imgs.forEach((img, i) => {
+      imgs.forEach((img) => {
         const wrapper = doc.createElement("p");
-        wrapper.appendChild(img.cloneNode(true));
+        // If image is wrapped in a link, clone the entire <a><img></a> structure
+        const link = img.closest("a");
+        if (link && link.parentNode === p) {
+          wrapper.appendChild(link.cloneNode(true));
+        } else {
+          wrapper.appendChild(img.cloneNode(true));
+        }
         parent.insertBefore(wrapper, p);
       });
       p.remove();

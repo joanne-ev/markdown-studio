@@ -290,6 +290,14 @@ async function run() {
     "two images separate blocks",
     "![First](one.png)\n\n![Second](two.png)"
   );
+  await roundtripCase(
+    "linked image (image wrapped in link)",
+    "[![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/joanne-ev/ds-projects/blob/main/wsl-analysis/notebook.py)"
+  );
+  await roundtripCase(
+    "multiple linked images in one paragraph split into separate blocks",
+    "[![First](one.png)](https://example.com/1) [![Second](two.png)](https://example.com/2)"
+  );
 
   // --------------------------------------------------------------------------
   category("H. Blockquotes");
