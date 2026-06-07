@@ -232,17 +232,19 @@ async function run() {
 
   // `|` inside code span in table cell — the critical protectTableCodePipes test.
   // Output canonicalizes to GFM-escaped `\|` (which is the correct markdown).
+  // Equal-width columns: global max width = 7 ("Example")
   await roundtripCase(
     "table with | in code span → escapes to \\|",
     "| Syntax | Example |\n| ------ | ------- |\n| pipe   | `a|b`   |",
-    "| Syntax | Example |\n| ------ | ------- |\n| pipe   | `a\\|b`  |\n"
+    "| Syntax  | Example |\n| ------- | ------- |\n| pipe    | `a\\|b`  |\n"
   );
 
   // `\|` already escaped — must stay `\|`, NOT become `\\|`
+  // Equal-width columns: global max width = 7 ("Example")
   await roundtripCase(
     "table with escaped \\| in code span (no double-escape)",
     "| Syntax | Example |\n| ------ | ------- |\n| escape | `a\\|b`  |",
-    "| Syntax | Example |\n| ------ | ------- |\n| escape | `a\\|b`  |\n"
+    "| Syntax  | Example |\n| ------- | ------- |\n| escape  | `a\\|b`  |\n"
   );
 
   // Multiple pipes in single code span
@@ -250,6 +252,19 @@ async function run() {
     "table cell with multiple | in code span",
     "| col     |\n| ------- |\n| `a|b|c` |",
     "| col       |\n| --------- |\n| `a\\|b\\|c` |\n"
+  );
+
+  // Equal column widths (fixed table layout) - all columns padded to global max
+  await roundtripCase(
+    "equal column widths: varying content lengths",
+    "| A | BB | CCC |\n| --- | ---- | ----- |\n| DDD | E | F |",
+    "| A   | BB  | CCC |\n| --- | --- | --- |\n| DDD | E   | F   |\n"
+  );
+
+  await roundtripCase(
+    "equal column widths: long header, short cells",
+    "| Very Long Header | B | C |\n| ------------------ | - | - |\n| x | y | z |",
+    "| Very Long Header | B                | C                |\n| ---------------- | ---------------- | ---------------- |\n| x                | y                | z                |\n"
   );
 
   // --------------------------------------------------------------------------
@@ -350,7 +365,7 @@ async function run() {
   await roundtripCase(
     "bold currency in table cell",
     "| Company | Valuation |\n| --- | --- |\n| **Skild AI** | **$14B**, $1.4B raised |",
-    "| Company      | Valuation              |\n| ------------ | ---------------------- |\n| **Skild AI** | **$14B**, $1.4B raised |\n"
+    "| Company                | Valuation              |\n| ---------------------- | ---------------------- |\n| **Skild AI**           | **$14B**, $1.4B raised |\n"
   );
 
   // Unescape escaped bold markers (\*\* → **) — safety-net normalizeMarkdown rule
@@ -510,12 +525,13 @@ async function run() {
   );
 
   // Table separator widths match unescaped content (not pre-unescape widths)
+  // Equal-width columns: global max width = 8 ("**$14B**")
   eq(
     "fixTableHeaders: separator width matches after unescape",
     normalizeMarkdown(
       "|   |   |\n| - | - |\n| Company | \\*\\*$14B** |\n"
     ),
-    "| Company | **$14B** |\n| ------- | -------- |\n"
+    "| Company  | **$14B** |\n| -------- | -------- |\n"
   );
 
   // HTML entity cleanup
